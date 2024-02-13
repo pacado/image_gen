@@ -4,6 +4,11 @@ import json
 import requests
 from datetime import datetime
 import re
+import platform
+
+platform = platform.processor()
+if "Intel64" in platform:
+    onPC = True
 
 
 def generate_image(OPENAI_API_KEY, query, n=1, size="1024x1024"):
@@ -16,7 +21,8 @@ def generate_image(OPENAI_API_KEY, query, n=1, size="1024x1024"):
                        "size": size})
 
     response = requests.request("POST", url, headers=headers, data=data)
-    return response
+    image_url = json.loads(response.text)['data'][0]['url']
+    return response, image_url
 
 
 def generate_filename(OPENAI_API_KEY, query: str) -> str:
@@ -47,14 +53,15 @@ with st.form("my_form"):
 
     submitted = st.form_submit_button("Submit")
     if submitted:
-        response = generate_image(OPENAI_API_KEY, query, n=1, size="1024x1024")
+        response, image_url = generate_image(
+            OPENAI_API_KEY, query, n=1, size="1024x1024")
         filename = generate_filename(OPENAI_API_KEY, query)
 
         if response.status_code == 200:
-            img_url = json.loads(response.text)['data'][0]['url']
-            img_data = requests.get(img_url).content
-            with open(filename, "wb") as image:
-                image.write(img_data)
+            if onPC:
+                img_data = requests.get(image_url).content
+                with open(filename, "wb") as image:
+                    image.write(img_data)
 
             st.text("Generated")
-            st.image(filename, caption=query)
+            st.image(image_url, caption=query)
