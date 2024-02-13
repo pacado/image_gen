@@ -64,6 +64,7 @@ with st.form("my_form"):
     if submitted:
         response, image_url = generate_image(
             OPENAI_API_KEY, query, n=1, size="1024x1024")
+        st.text("Generated Image location:" + image_url)
         filename = generate_filename(OPENAI_API_KEY, query)
 
         if response.status_code == 200:
