@@ -4,15 +4,18 @@ import json
 import requests
 from datetime import datetime
 import re
-import platform
 
 
 def isOnPC():
     onPC = False
 
-    platform = platform.processor()
-    if "Intel64" in platform:
-        onPC = True
+    try:
+        import platform
+        platform = platform.processor()
+        if "Intel64" in platform:
+            onPC = True
+    except:
+        print("Running on cloud")
 
     return onPC
 
